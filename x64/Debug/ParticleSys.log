@@ -1,2 +1,8 @@
 ﻿  main.cpp
+c:\gl\particlesys\main.cpp(69): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
+c:\gl\particlesys\main.cpp(84): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+c:\gl\particlesys\main.cpp(87): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+c:\gl\particlesys\main.cpp(90): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+c:\gl\particlesys\main.cpp(111): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\gl\particlesys\main.cpp(110): warning C4101: 'f': unreferenced local variable
   ParticleSys.vcxproj -> C:\GL\ParticleSys\x64\Debug\ParticleSys.exe

@@ -13,10 +13,11 @@ struct Particle {
 	float life; 
 
 	Particle()
-		: position(0.0f)
+		: position(0.0, 0.0, 0.0)
 		, velocity(0.0f)
 		, direction(0.0f)
-		, colour(1.0f)
+		// colour is initialised as cyan 
+		, colour(0.0, 1.0, 1.0, 1.0)
 		, life(0.0f) 
 		, age(0.0f)
 		, weight(0.0f)
