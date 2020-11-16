@@ -13,7 +13,8 @@ GLuint axisList;
 int AXIS_SIZE = 200;
 int axisEnabled = 1;
 
-using namespace std;	
+using namespace std;
+using namespace glm;	
 
 const int MaxParticles = 100000;
 
@@ -25,8 +26,27 @@ double myRandom()
 	return (rand() / (double)RAND_MAX);
 }
 
+// calculates random particle initial direction 
+vec3 particle_direction() {
+	// range [-0.2, 0.2]
+	float x = -0.2 + 0.4 * myRandom();
+	float y = 2 + 1 * myRandom();
+	float z = -0.2 + 0.4 * myRandom();
+
+	vec3 dir = vec3(x, y, z);
+
+	return dir;
+}
+
+float particle_speed() {
+	// range betweek [0, 1]
+	return myRandom();
+}
+
 void newParticle() {
-	Particle p;
+	vec3 origin = vec3(0.0, 0.0, 0.0);
+	vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
+	Particle p = { origin, water_colour, particle_direction(), particle_speed(), 0.2 };
 	particles.push_back(p);
 }
 
@@ -47,8 +67,6 @@ void display()
 	for (int i = 0; i < 1; i++)
 	{
 
-		//glColor3f(0.0, 1.0, 1.0);
-		//glVertex3f(0.0, 0.0, 0.0);
 		glColor3f(particles[i].colour[0], particles[i].colour[1], particles[i].colour[2]);
 		glVertex3f(particles[i].position[0], particles[i].position[1], particles[i].position[2]);
 	

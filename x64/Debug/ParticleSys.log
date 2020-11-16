@@ -1,8 +1,13 @@
 ﻿  main.cpp
-c:\gl\particlesys\main.cpp(69): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
-c:\gl\particlesys\main.cpp(84): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-c:\gl\particlesys\main.cpp(87): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-c:\gl\particlesys\main.cpp(90): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
-c:\gl\particlesys\main.cpp(111): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-c:\gl\particlesys\main.cpp(110): warning C4101: 'f': unreferenced local variable
-  ParticleSys.vcxproj -> C:\GL\ParticleSys\x64\Debug\ParticleSys.exe
+c:\gl\particlesystem\main.cpp(32): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\gl\particlesystem\main.cpp(33): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\gl\particlesystem\main.cpp(34): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\gl\particlesystem\main.cpp(43): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+c:\gl\particlesystem\main.cpp(49): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\gl\particlesystem\main.cpp(87): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
+c:\gl\particlesystem\main.cpp(102): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+c:\gl\particlesystem\main.cpp(105): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+c:\gl\particlesystem\main.cpp(108): warning C4244: 'argument': conversion from 'int' to 'GLfloat', possible loss of data
+c:\gl\particlesystem\main.cpp(129): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+c:\gl\particlesystem\main.cpp(128): warning C4101: 'f': unreferenced local variable
+  ParticleSys.vcxproj -> C:\GL\ParticleSystem\x64\Debug\ParticleSys.exe
