@@ -6,7 +6,9 @@
 #include <GL\glew.h>
 #include <GL\freeglut.h>
 #include "particle.h" 
-#include <vector>
+#include "emmitter.h"
+#include "mathFunc.h"
+#include <iostream>
 
 GLuint axisList;
 
@@ -16,64 +18,43 @@ int axisEnabled = 1;
 using namespace std;
 using namespace glm;	
 
-const int MaxParticles = 100000;
+int counter = 0;
 
-// Vector to store particles 
-vector<Particle> particles;
+ParticleBuffer pb;
 
-double myRandom()
-{
-	return (rand() / (double)RAND_MAX);
-}
-
-// calculates random particle initial direction 
-vec3 particle_direction() {
-	// range [-0.2, 0.2]
-	float x = -0.2 + 0.4 * myRandom();
-	float y = 2 + 1 * myRandom();
-	float z = -0.2 + 0.4 * myRandom();
-
-	vec3 dir = vec3(x, y, z);
-
-	return dir;
-}
-
-float particle_speed() {
-	// range betweek [0, 1]
-	return myRandom();
-}
-
-void newParticle() {
-	vec3 origin = vec3(0.0, 0.0, 0.0);
-	vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
-	Particle p = { origin, water_colour, particle_direction(), particle_speed(), 0.2 };
-	particles.push_back(p);
+void redisplay(int in) {
+	glutPostRedisplay();
 }
 
 void display()
 {
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0.0, 0.0, 2.0,
+	gluLookAt(0.0, 0.0, 100.0,
 		0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0);
-	glClearColor(0.5, 0.5, 0.5, 0.5);
-	glClear(GL_COLOR_BUFFER_BIT);
 
 	if (axisEnabled) glCallList(axisList);
-	newParticle();
-	glPointSize(10);
-	glBegin(GL_POINTS);
-	
-	for (int i = 0; i < 1; i++)
-	{
 
-		glColor3f(particles[i].colour[0], particles[i].colour[1], particles[i].colour[2]);
-		glVertex3f(particles[i].position[0], particles[i].position[1], particles[i].position[2]);
-	
+	update_particles(pb);
+
+	//cout << pb.size();
+
+	for (int i = 0; i < pb.size(); i++)
+	{
+		//cout << "new";
+		glPushMatrix();
+		glTranslatef(pb[i].position.x, pb[i].position.y, pb[i].position.z);
+		glutSolidSphere(pb[i].size, 20, 20);
+		glPopMatrix();
 	}
 
-	glEnd();
 	glutSwapBuffers();
+
+	// refreshes frame every 5ms after recalculate positions
+	glutTimerFunc(5, redisplay, 0);
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -123,12 +104,23 @@ void initGraphics(int argc, char *argv[])
 	makeAxes();
 }
 
+void newParticles() {
+	counter++;
+	// adds new particle every 4000th time function ran 
+	// larger value = fewer particles
+	if (counter % 4000 == 0) {
+		newParticle(pb);
+	}
+	/*cout << pb.size();*/
+}
+
 int main(int argc, char *argv[])
 {
 	double f;
 	srand(time(NULL));
 	initGraphics(argc, argv);
 	glEnable(GL_POINT_SMOOTH);
+	glutIdleFunc(newParticles);
 	glutMainLoop();
 	return 0;
 }

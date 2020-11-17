@@ -1,0 +1,8 @@
+/ParticleSys.sln
+/ParticleSys.vcxproj
+/ParticleSys.vcxproj.filters
+/ParticleSys.vcxproj.user
+/freeglut.dll
+/glew32.dll
+/x64
+/.vs
