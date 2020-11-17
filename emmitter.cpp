@@ -34,11 +34,12 @@ float particle_speed() {
 }
 
 void newParticle(ParticleBuffer &pb) {
+	/*cout << counter;*/
 	vec3 origin = vec3(0.0, 0.0, 0.0);
 	vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
 	Particle p = { origin, water_colour, particle_direction(), particle_speed(), 0.2 };
 	pb.push_back(p);
-	cout << pb.size();
+	/*cout << pb.size();*/
 }
 
 
@@ -51,9 +52,27 @@ vec3 gravity_motion(Particle &p) {
 
 void update_particles(ParticleBuffer &pb) {
 	for (int i = 0; i < pb.size(); i++) {
+		if (pb[i].direction.y < -3) {
+			
+		}
 		// recalculate direction due to gravity 
 		pb[i].direction = gravity_motion(pb[i]);
 		// recalculate position due to gravity 
 		pb[i].position = update_vec(pb[i].position, pb[i].direction);
 	}
 }
+
+void remove_particles(ParticleBuffer &pb, int i) {
+	pb.erase(pb.begin() + i);
+}
+//
+//void remove_p(Particle &p, ParticleBuffer &pb) {
+//	vector <Particle>::iterator it3;
+//	for (it3 = pb.begin(); it3 != pb.end(); ++it3) {
+//		if (it3-> == p) {
+//			it3 = vec.erase(it3); // After erasing, it3 is now pointing the next location.
+//			--it3; // Go to the prev location because of ++it3 in the end of for loop.
+//			isFound = true;
+//		}
+//	}
+//}

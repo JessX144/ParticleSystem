@@ -10,10 +10,16 @@
 #include "mathFunc.h"
 #include <iostream>
 
+#define DEG_TO_RAD 0.017453293
+#define ZOOM_SPEED  10.0
+
 GLuint axisList;
 
 int AXIS_SIZE = 200;
 int axisEnabled = 1;
+int MAX_PARTICLES = 10000;
+
+GLfloat  eyex, eyey, eyez;   
 
 using namespace std;
 using namespace glm;	
@@ -26,13 +32,52 @@ void redisplay(int in) {
 	glutPostRedisplay();
 }
 
+void newParticles() {
+	counter++;
+	newParticle(pb);
+	newParticle(pb);
+	newParticle(pb);
+	newParticle(pb);
+	glutPostRedisplay();
+}
+
+void special(int key, int xx, int yy) {
+
+	float deg = 0;
+	float original_x = eyex;
+	float original_z = eyez;
+	float original_y = eyey;
+	float fraction = 0.1f;
+
+	switch (key) {
+		case GLUT_KEY_LEFT:
+			deg += 1;
+			eyex = cos(deg*DEG_TO_RAD) * original_x + sin(deg*DEG_TO_RAD) * original_z;
+			eyez = -sin(deg*DEG_TO_RAD) * original_x + cos(deg*DEG_TO_RAD) * original_z;
+			break;
+		case GLUT_KEY_RIGHT:
+			deg += 1;
+			eyex = cos(deg*DEG_TO_RAD) * original_x - sin(deg*DEG_TO_RAD) * original_z;
+			eyez = sin(deg*DEG_TO_RAD) * original_x + cos(deg*DEG_TO_RAD) * original_z;
+			break;
+		case GLUT_KEY_UP:
+			cout << "\n";
+			cout << eyez;
+			eyez += cos(0*DEG_TO_RAD)*ZOOM_SPEED;
+			break;
+		case GLUT_KEY_DOWN:
+			eyez -= cos(0*DEG_TO_RAD)*ZOOM_SPEED;
+			break;
+	}
+
+}
+
 void display()
 {
-
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(0.0, 0.0, 100.0,
+	gluLookAt(eyex, eyey, eyez,
 		0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0);
 
@@ -40,27 +85,20 @@ void display()
 
 	update_particles(pb);
 
-	//cout << pb.size();
-
 	for (int i = 0; i < pb.size(); i++)
 	{
-		//cout << "new";
 		glPushMatrix();
 		glTranslatef(pb[i].position.x, pb[i].position.y, pb[i].position.z);
-		glutSolidSphere(pb[i].size, 20, 20);
+		glutSolidSphere(pb[i].size * 3, 20, 20);
 		glPopMatrix();
 	}
 
 	glutSwapBuffers();
-
-	// refreshes frame every 5ms after recalculate positions
-	glutTimerFunc(5, redisplay, 0);
 }
 
 void keyboard(unsigned char key, int x, int y)
 {
 	if (key == 27) exit(0);
-	glutPostRedisplay();
 }
 
 void reshape(int width, int height)
@@ -93,6 +131,10 @@ void makeAxes() {
 
 void initGraphics(int argc, char *argv[])
 {
+	eyex = 0.0;
+	eyey = 1.7;
+	eyez = 100.0;
+
 	glutInit(&argc, argv);
 	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(100, 100);
@@ -100,18 +142,9 @@ void initGraphics(int argc, char *argv[])
 	glutCreateWindow("COMP37111 Particles");
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
+	glutSpecialFunc(special);
 	glutReshapeFunc(reshape);
 	makeAxes();
-}
-
-void newParticles() {
-	counter++;
-	// adds new particle every 4000th time function ran 
-	// larger value = fewer particles
-	if (counter % 4000 == 0) {
-		newParticle(pb);
-	}
-	/*cout << pb.size();*/
 }
 
 int main(int argc, char *argv[])
@@ -121,6 +154,7 @@ int main(int argc, char *argv[])
 	initGraphics(argc, argv);
 	glEnable(GL_POINT_SMOOTH);
 	glutIdleFunc(newParticles);
+	// calls display repeatedly, calling idle inbetween 
 	glutMainLoop();
 	return 0;
 }
