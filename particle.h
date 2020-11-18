@@ -17,6 +17,15 @@ struct Particle {
 };
 
 // Vector to store particles 
-typedef vector<Particle> ParticleBuffer;
+//typedef vector<Particle> ParticleBuffer;
+//typedef Particle* ParticleBuffer;
+
+struct ParticleList {
+	Particle* List;
+	int num_elements;
+	int max_size;
+};
+
+//typedef Particle* ParticleList;
 
 #endif

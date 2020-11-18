@@ -17,7 +17,7 @@ GLuint axisList;
 
 int AXIS_SIZE = 200;
 int axisEnabled = 1;
-int MAX_PARTICLES = 10000;
+const int MaxParticles = 10000;
 
 GLfloat  eyex, eyey, eyez;   
 
@@ -26,7 +26,19 @@ using namespace glm;
 
 int counter = 0;
 
-ParticleBuffer pb;
+//ParticleBuffer pb;
+ParticleList pb;
+
+void createArray() {
+	pb.List = (Particle*)malloc(MaxParticles * sizeof(Particle));
+	pb.max_size = MaxParticles;
+	pb.num_elements = 0;
+
+	if (pb.List == NULL) {
+		printf("Memory not allocated.\n");
+		exit(0);
+	}
+}
 
 void redisplay(int in) {
 	glutPostRedisplay();
@@ -34,7 +46,6 @@ void redisplay(int in) {
 
 void newParticles() {
 	counter++;
-	newParticle(pb);
 	newParticle(pb);
 	newParticle(pb);
 	newParticle(pb);
@@ -60,9 +71,7 @@ void special(int key, int xx, int yy) {
 			eyex = cos(deg*DEG_TO_RAD) * original_x - sin(deg*DEG_TO_RAD) * original_z;
 			eyez = sin(deg*DEG_TO_RAD) * original_x + cos(deg*DEG_TO_RAD) * original_z;
 			break;
-		case GLUT_KEY_UP:
-			cout << "\n";
-			cout << eyez;
+		case GLUT_KEY_UP:;
 			eyez += cos(0*DEG_TO_RAD)*ZOOM_SPEED;
 			break;
 		case GLUT_KEY_DOWN:
@@ -85,14 +94,13 @@ void display()
 
 	update_particles(pb);
 
-	for (int i = 0; i < pb.size(); i++)
+	for (int i = 0; i < pb.num_elements; i++)
 	{
 		glPushMatrix();
-		glTranslatef(pb[i].position.x, pb[i].position.y, pb[i].position.z);
-		glutSolidSphere(pb[i].size * 3, 20, 20);
+		glTranslatef(pb.List[i].position.x, pb.List[i].position.y, pb.List[i].position.z);
+		glutSolidSphere(pb.List[i].size * 3, 20, 20);
 		glPopMatrix();
 	}
-
 	glutSwapBuffers();
 }
 
@@ -135,6 +143,8 @@ void initGraphics(int argc, char *argv[])
 	eyey = 1.7;
 	eyez = 100.0;
 
+	createArray();
+
 	glutInit(&argc, argv);
 	glutInitWindowSize(800, 600);
 	glutInitWindowPosition(100, 100);
@@ -156,5 +166,7 @@ int main(int argc, char *argv[])
 	glutIdleFunc(newParticles);
 	// calls display repeatedly, calling idle inbetween 
 	glutMainLoop();
+	// must close using proper exit, else error
+	free(pb.List);
 	return 0;
 }

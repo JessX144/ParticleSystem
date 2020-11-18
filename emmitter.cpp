@@ -12,7 +12,7 @@
 using namespace std;
 using namespace glm;
 
-const int MaxParticles = 100000;
+const int MaxParticles = 10000;
 float gravity = 9.8;
 
 // calculates random particle initial direction 
@@ -33,13 +33,24 @@ float particle_speed() {
 	return myRandom();
 }
 
-void newParticle(ParticleBuffer &pb) {
-	/*cout << counter;*/
+void newParticle(ParticleList &pb) {
+
 	vec3 origin = vec3(0.0, 0.0, 0.0);
 	vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
 	Particle p = { origin, water_colour, particle_direction(), particle_speed(), 0.2 };
-	pb.push_back(p);
-	/*cout << pb.size();*/
+	
+	if (pb.num_elements > pb.max_size) {
+		//cout << "too many";
+		//cout << num_particles;
+		//cout << MaxParticles;
+		// delete element at index 0
+		memmove(pb.List, pb.List + 1, (pb.num_elements- 2) * sizeof(Particle));
+		pb.num_elements--;
+	}
+
+	pb.num_elements++;
+	pb.List[pb.num_elements] = p;
+
 }
 
 
@@ -50,29 +61,19 @@ vec3 gravity_motion(Particle &p) {
 	return p.direction;
 }
 
-void update_particles(ParticleBuffer &pb) {
-	for (int i = 0; i < pb.size(); i++) {
-		if (pb[i].direction.y < -3) {
-			
+void update_particles(ParticleList &pb) {
+
+	for (int i = 0; i < pb.num_elements; i++) {
+		// if fallen lower on y axis, remove that element 
+		if (pb.List[i].direction.y < -3) {
+			memmove(pb.List + i, pb.List + i + 1, (pb.num_elements- 2) * sizeof(Particle));
+			pb.num_elements--;
+			// don't need to consider this particle anymore, move onto next
+			break;
 		}
 		// recalculate direction due to gravity 
-		pb[i].direction = gravity_motion(pb[i]);
+		pb.List[i].direction = gravity_motion(pb.List[i]);
 		// recalculate position due to gravity 
-		pb[i].position = update_vec(pb[i].position, pb[i].direction);
+		pb.List[i].position = update_vec(pb.List[i].position, pb.List[i].direction);
 	}
 }
-
-void remove_particles(ParticleBuffer &pb, int i) {
-	pb.erase(pb.begin() + i);
-}
-//
-//void remove_p(Particle &p, ParticleBuffer &pb) {
-//	vector <Particle>::iterator it3;
-//	for (it3 = pb.begin(); it3 != pb.end(); ++it3) {
-//		if (it3-> == p) {
-//			it3 = vec.erase(it3); // After erasing, it3 is now pointing the next location.
-//			--it3; // Go to the prev location because of ++it3 in the end of for loop.
-//			isFound = true;
-//		}
-//	}
-//}
