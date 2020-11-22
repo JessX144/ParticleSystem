@@ -43,7 +43,9 @@ void createArray() {
 void newParticles() {
 	counter++;
   newParticle(&pb);
-  if (counter % 5 == 0) {
+  newParticle(&pb);
+  newParticle(&pb);
+  if (counter % 3 == 0) {
     update_particles(&pb);
     glutPostRedisplay();
   }
@@ -78,6 +80,13 @@ void special(int key, int xx, int yy) {
 
 }
 
+void explode(Particle p) {
+  for (int i = 0; i < 4200; i++) {
+    vec3 direction(2 * (1 - (rand() % 200 / 100.0)), 1 * (rand() % 300 / 100.0), 2 * ((1 - rand() % 200 / 100.0)));
+
+  }
+}
+
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -95,7 +104,7 @@ void display()
 	{
 		glPushMatrix();
 		glTranslatef(pb.List[i].position.x, pb.List[i].position.y, pb.List[i].position.z);
-		glutWireSphere(pb.List[i].size * 3, 20, 20);
+		glutWireSphere(pb.List[i].size * 2, 20, 20);
 		glPopMatrix();
 	}
 	glutSwapBuffers();

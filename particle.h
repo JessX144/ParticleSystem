@@ -13,7 +13,9 @@ struct Particle {
 	vec4 colour;
 	vec3 direction;
 	float velocity;
+  float acceleration;
 	float size;
+  int num_b;
 };
 
 // Vector to store particles 
