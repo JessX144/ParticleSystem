@@ -12,7 +12,7 @@
 using namespace std;
 using namespace glm;
 
-const int MaxParticles = 10000;
+const int MaxParticles = 1000;
 float gravity = 9.8;
 
 // calculates random particle initial direction 
@@ -33,23 +33,21 @@ float particle_speed() {
 	return myRandom();
 }
 
-void newParticle(ParticleList &pb) {
+void newParticle(ParticleList *pb) {
 
 	vec3 origin = vec3(0.0, 0.0, 0.0);
 	vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
 	Particle p = { origin, water_colour, particle_direction(), particle_speed(), 0.2 };
 	
-	if (pb.num_elements > pb.max_size) {
-		//cout << "too many";
-		//cout << num_particles;
-		//cout << MaxParticles;
+	if (pb->num_elements > pb->max_size) {
 		// delete element at index 0
-		memmove(pb.List, pb.List + 1, (pb.num_elements- 2) * sizeof(Particle));
-		pb.num_elements--;
+		// memmove(pb.List, pb.List + 1, (pb.num_elements- 2) * sizeof(Particle));
+    pb->List[0] = pb->List[pb->num_elements];
+		pb->num_elements--;
 	}
 
-	pb.num_elements++;
-	pb.List[pb.num_elements] = p;
+	pb->num_elements++;
+	pb->List[pb->num_elements] = p;
 
 }
 
@@ -61,19 +59,18 @@ vec3 gravity_motion(Particle &p) {
 	return p.direction;
 }
 
-void update_particles(ParticleList &pb) {
+void update_particles(ParticleList *pb) {
 
-	for (int i = 0; i < pb.num_elements; i++) {
+	for (int i = 0; i < pb->num_elements; i++) {
 		// if fallen lower on y axis, remove that element 
-		if (pb.List[i].direction.y < -3) {
-			memmove(pb.List + i, pb.List + i + 1, (pb.num_elements- 2) * sizeof(Particle));
-			pb.num_elements--;
-			// don't need to consider this particle anymore, move onto next
-			break;
+		if (pb->List[i].direction.y < -2) {
+      cout << "too low";
+      swap(pb->List[i], pb->List[pb->num_elements]);
+			pb->num_elements--;
 		}
 		// recalculate direction due to gravity 
-		pb.List[i].direction = gravity_motion(pb.List[i]);
+		pb->List[i].direction = gravity_motion(pb->List[i]);
 		// recalculate position due to gravity 
-		pb.List[i].position = update_vec(pb.List[i].position, pb.List[i].direction);
+		pb->List[i].position = update_vec(pb->List[i].position, pb->List[i].direction);
 	}
 }

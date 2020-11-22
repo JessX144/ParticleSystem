@@ -40,16 +40,13 @@ void createArray() {
 	}
 }
 
-void redisplay(int in) {
-	glutPostRedisplay();
-}
-
 void newParticles() {
 	counter++;
-	newParticle(pb);
-	newParticle(pb);
-	newParticle(pb);
-	glutPostRedisplay();
+  newParticle(&pb);
+  if (counter % 5 == 0) {
+    update_particles(&pb);
+    glutPostRedisplay();
+  }
 }
 
 void special(int key, int xx, int yy) {
@@ -92,13 +89,13 @@ void display()
 
 	if (axisEnabled) glCallList(axisList);
 
-	update_particles(pb);
+  // poly
 
 	for (int i = 0; i < pb.num_elements; i++)
 	{
 		glPushMatrix();
 		glTranslatef(pb.List[i].position.x, pb.List[i].position.y, pb.List[i].position.z);
-		glutSolidSphere(pb.List[i].size * 3, 20, 20);
+		glutWireSphere(pb.List[i].size * 3, 20, 20);
 		glPopMatrix();
 	}
 	glutSwapBuffers();
