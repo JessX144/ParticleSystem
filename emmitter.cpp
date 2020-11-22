@@ -39,9 +39,7 @@ void newParticle(ParticleList *pb) {
 	Particle p = { origin, water_colour, particle_direction(), particle_speed(), 9.8, 0.2, 0};
 	
 	if (pb->num_elements > pb->max_size) {
-    cout << "too many";
     pb->List[0] = pb->List[pb->num_elements];
-    //swap(pb->List[0], pb->List[pb->num_elements]);
     pb->num_elements--;
 	}
 
@@ -50,28 +48,27 @@ void newParticle(ParticleList *pb) {
 
 }
 
-//void newParticleScatter(ParticleList *pb, Particle p) {
-//
-//  vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
-//
-//  p.position.y = 0.0;
-//  p.direction.y = 0.01 * (p.direction.y);
-//
-//  for (int i = 0; i < 5; i++) {
-//    float y_dir = 0.1 * p.direction.y * -1;
-//    Particle new_p = {vec3(p.position.x, -3.8, p.position.z), water_colour, vec3(p.direction.x, y_dir, p.direction.z), particle_speed(), 9.8, p.size *= 0.5, 1};
-//
-//    if (pb->num_elements > pb->max_size) {
-//      cout << "too many";
-//      pb->List[0] = pb->List[pb->num_elements];
-//      pb->num_elements--;
-//    }
-//
-//    pb->num_elements++;
-//    pb->List[pb->num_elements] = new_p;
-//  }
-//
-//}
+void newParticleScatter(ParticleList *pb, Particle p) {
+
+  vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
+
+  p.position.y = 0.0;
+  p.direction.y = 0.01 * (-1 * p.direction.y);
+
+  for (int i = 0; i < 5; i++) {
+    float y_dir = 0.1 * p.direction.y * -1;
+    Particle new_p = {vec3(p.position.x, -3.9, p.position.z), water_colour, vec3(p.direction.x, y_dir, p.direction.z), particle_speed(), 9.8, p.size *= 0.5, 1};
+
+    if (pb->num_elements > pb->max_size) {
+      pb->List[0] = pb->List[pb->num_elements];
+      pb->num_elements--;
+    }
+
+    pb->num_elements++;
+    pb->List[pb->num_elements] = new_p;
+  }
+
+}
 
 // How particle effected by gravity 
 vec3 gravity_motion(Particle &p) {
@@ -92,11 +89,13 @@ void update_particles(ParticleList *pb) {
 
       // if the particle hasnt bounced before 
       if (pb->List[i].num_b == 0) {
-        pb->List[i].position.y = -3.8;
-        pb->List[i].direction.y = 0.1 * (-1 * pb->List[i].direction.y);
-        pb->List[i].num_b += 1;
-        pb->List[i].size *= 0.5;
-        //newParticleScatter(pb, pb->List[i]);
+        //pb->List[i].position.y = -3.9;
+        //pb->List[i].direction.y = 0.1 * (-1 * pb->List[i].direction.y);
+        //pb->List[i].num_b += 1;
+        //pb->List[i].size *= 0.5;
+        newParticleScatter(pb, pb->List[i]);
+        pb->List[i] = pb->List[pb->num_elements];
+        pb->num_elements--;
       }
       else {
         pb->List[i] = pb->List[pb->num_elements];
