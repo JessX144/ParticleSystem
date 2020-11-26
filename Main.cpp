@@ -15,18 +15,20 @@
 
 GLuint axisList;
 
+float emit_rate = 0.8;
+
 int AXIS_SIZE = 200;
 int axisEnabled = 1;
 const int MaxParticles = 10000;
 
 GLfloat  eyex, eyey, eyez;   
 
+int height = 800;
+int width = 600;
+
 using namespace std;
 using namespace glm;	
 
-int counter = 0;
-
-//ParticleBuffer pb;
 ParticleList pb;
 
 void createArray() {
@@ -40,15 +42,11 @@ void createArray() {
 	}
 }
 
-void newParticles() {
-	counter++;
+void newParticles(int i) {
   newParticle(&pb);
-  newParticle(&pb);
-  newParticle(&pb);
-  if (counter % 3 == 0) {
-    update_particles(&pb);
-    glutPostRedisplay();
-  }
+  update_particles(&pb);
+  glutPostRedisplay();
+  glutTimerFunc(emit_rate, newParticles, 0);
 }
 
 void special(int key, int xx, int yy) {
@@ -57,7 +55,6 @@ void special(int key, int xx, int yy) {
 	float original_x = eyex;
 	float original_z = eyez;
 	float original_y = eyey;
-	float fraction = 0.1f;
 
 	switch (key) {
 		case GLUT_KEY_LEFT:
@@ -70,22 +67,28 @@ void special(int key, int xx, int yy) {
 			eyex = cos(deg*DEG_TO_RAD) * original_x - sin(deg*DEG_TO_RAD) * original_z;
 			eyez = sin(deg*DEG_TO_RAD) * original_x + cos(deg*DEG_TO_RAD) * original_z;
 			break;
-		case GLUT_KEY_UP:;
-			eyez += cos(0*DEG_TO_RAD)*ZOOM_SPEED;
+		case GLUT_KEY_UP:
+      if (eyez <= 200) {
+        eyez += cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
+      }
 			break;
 		case GLUT_KEY_DOWN:
-			eyez -= cos(0*DEG_TO_RAD)*ZOOM_SPEED;
+      if (eyez >= 20) {
+        eyez -= cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
+      }
 			break;
 	}
 
 }
 
-void explode(Particle p) {
-  for (int i = 0; i < 4200; i++) {
-    vec3 direction(2 * (1 - (rand() % 200 / 100.0)), 1 * (rand() % 300 / 100.0), 2 * ((1 - rand() % 200 / 100.0)));
-
-  }
+void show_text() {
+  unsigned char string[] = "test";
+  int w;
+  w = glutBitmapLength(GLUT_BITMAP_8_BY_13, string);
+  float x = .5; /* Centre in the middle of the window */
+  glRasterPos2f(x - (float)width / 2, 0.);
 }
+
 
 void display()
 {
@@ -98,13 +101,11 @@ void display()
 
 	if (axisEnabled) glCallList(axisList);
 
-  // poly
-
 	for (int i = 0; i < pb.num_elements; i++)
 	{
 		glPushMatrix();
 		glTranslatef(pb.List[i].position.x, pb.List[i].position.y, pb.List[i].position.z);
-		glutWireSphere(pb.List[i].size * 2, 20, 20);
+		glutWireSphere(pb.List[i].size, 20, 20);
 		glPopMatrix();
 	}
 	glutSwapBuffers();
@@ -147,12 +148,12 @@ void initGraphics(int argc, char *argv[])
 {
 	eyex = 0.0;
 	eyey = 1.7;
-	eyez = 100.0;
+	eyez = 20.0;
 
 	createArray();
 
 	glutInit(&argc, argv);
-	glutInitWindowSize(800, 600);
+	glutInitWindowSize(height, width);
 	glutInitWindowPosition(100, 100);
 	glutInitDisplayMode(GLUT_DOUBLE);
 	glutCreateWindow("COMP37111 Particles");
@@ -169,10 +170,8 @@ int main(int argc, char *argv[])
 	srand(time(NULL));
 	initGraphics(argc, argv);
 	glEnable(GL_POINT_SMOOTH);
-	glutIdleFunc(newParticles);
-	// calls display repeatedly, calling idle inbetween 
+  glutTimerFunc(emit_rate, newParticles, 0);
 	glutMainLoop();
-	// must close using proper exit, else error
 	free(pb.List);
 	return 0;
 }

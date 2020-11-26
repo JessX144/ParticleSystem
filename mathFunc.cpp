@@ -3,17 +3,27 @@
 
 using namespace glm;
 
-// add two vec3s element wise  
-vec3 update_vec(vec3 v, vec3 u) {
-	v.x += u.x;
-	v.y += u.y;
-	v.z += u.z;
-
-	return v;
-}
-
 // random function returns aue [0, 1]
 double myRandom()
 {
 	return (rand() / (double)RAND_MAX);
+}
+
+vec3 myRandomSpeed()
+{
+
+  float x = -0.4 + (myRandom() * 0.8);
+  float y = 10 + (myRandom() * 0.4);
+  float z = -0.4 + (myRandom() * 0.8);
+  
+  vec3 v = vec3(x, y, z);
+  return v;
+}
+
+vec3 multVec(vec3 vector, float f) {
+  vector.x *= f;
+  vector.y *= f;
+  vector.z *= f;
+
+  return vector;
 }

@@ -11,16 +11,11 @@ using namespace glm;
 struct Particle {
 	vec3 position;
 	vec4 colour;
-	vec3 direction;
-	float velocity;
+	vec3 velocity;
   float acceleration;
 	float size;
   int num_b;
 };
-
-// Vector to store particles 
-//typedef vector<Particle> ParticleBuffer;
-//typedef Particle* ParticleBuffer;
 
 struct ParticleList {
 	Particle* List;
@@ -28,6 +23,5 @@ struct ParticleList {
 	int max_size;
 };
 
-//typedef Particle* ParticleList;
 
 #endif

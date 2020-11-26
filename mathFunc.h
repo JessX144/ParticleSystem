@@ -6,7 +6,9 @@
 using namespace glm;
 
 double myRandom();
-// add two vec3s element wise  
-vec3 update_vec(vec3 v, vec3 u);
+
+vec3 myRandomSpeed();
+
+vec3 multVec(vec3 vector, float f);
 
 #endif
