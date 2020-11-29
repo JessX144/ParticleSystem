@@ -1,6 +1,8 @@
 #include <glm.hpp>
 #include "mathFunc.h"
 
+#define PI 3.14159;
+
 using namespace glm;
 
 // random function returns aue [0, 1]
@@ -26,4 +28,11 @@ vec3 multVec(vec3 vector, float f) {
   vector.z *= f;
 
   return vector;
+}
+
+vec3 circularPos(float r) {
+  float theta = myRandom() * 2 * PI;
+  float x = r * cos(theta);
+  float z = r * sin(theta);
+  return vec3(x, 0, z);
 }

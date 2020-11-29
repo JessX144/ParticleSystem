@@ -16,14 +16,14 @@ const int MaxParticles = 10000;
 
 #define DEG_TO_RAD 0.017453293
 
-void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels) {
+void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels, float r) {
 
-	vec3 origin = vec3(0.0, 0.0, 0.0);
+  vec3 emmitter_shape = circularPos(r);
   vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
 
   float level_fac = 1 + num_levels * 0.2;
 
-	Particle p = { origin, water_colour, myRandomSpeed(speed_fac * level_fac, num_levels), gravity, 0.08, 0};
+	Particle p = { emmitter_shape, water_colour, myRandomSpeed(speed_fac * level_fac, num_levels), gravity, 0.08, 0};
 	
 	if (pb->num_elements > pb->max_size) {
     pb->List[0] = pb->List[pb->num_elements];

@@ -11,4 +11,6 @@ vec3 myRandomSpeed(float speed_fac, int level);
 
 vec3 multVec(vec3 vector, float f);
 
+vec3 circularPos(float r);
+
 #endif

@@ -34,6 +34,8 @@ int num_levels = 1;
 const int MaxParticles = 10000;
 float gravity = -9.8;
 float speed_fac = 1;
+float emmitter_r = 0;
+int num_p = 1;
 
 using namespace std;
 using namespace glm;	
@@ -59,24 +61,27 @@ void newParticles() {
   old_time = sec;
 
   counter++;
+
   // larger emit rate, fewer particles emmitted 
   if (counter%emit_rate == 0) {
-    for (int i = 1; i <= num_levels; i++) {
-      newParticle(&pb, gravity, speed_fac, i);
+    for (int j = 0; j < num_p; j++) {
+      for (int i = 1; i <= num_levels; i++) {
+        newParticle(&pb, gravity, speed_fac, i, emmitter_r);
+      }
     }
   }
+
   update_particles(&pb, gravity, delta_time, speed_fac);
   glutPostRedisplay();
 }
 
 // called every display/frame 
-void CalculateFrameRate()
+void getFrameRate()
 {
   float currentTime = GetTickCount() * 0.001f;
   ++fps;
   if (currentTime - lastTime >= 1.0f)
   {
-    //cout << currentTime - lastTime;
     framesPerSec = fps / (currentTime - lastTime);
     lastTime = currentTime;
     fps = 0;
@@ -118,22 +123,25 @@ void special(int key, int xx, int yy) {
 void show_text()
 {
   int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_18)/20;
-  char g[30], e[30], m[30], s[30], f[30];
+  char g[30], e[30], m[30], s[30], f[30], r[30], n[30];
   char *c;
   sprintf_s(g, "gravity: %f", gravity);
   sprintf_s(e, "emit rate: %d", emit_rate);
   sprintf_s(m, "max particles: %d", MaxParticles);
   sprintf_s(s, "speed factor: %f", speed_fac);
+  sprintf_s(r, "emmitter radius: %f", emmitter_r);
+  sprintf_s(n, "num particles scale: %d", num_p);
+
   if (framesPerSec != 0) {
     sprintf_s(f, "fps: %f", framesPerSec);
   }
 
-  char * str[5] = { g, e, m, s, f };
+  char * str[7] = { g, e, m, s, f, r, n };
 
   glColor3f(1.0, 1.0, 1.0);
   glRasterPos3f(2, 2, 2);
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 7; i++) {
     glRasterPos3f(2, 2 + i * lineHeight, 2);
     for (c = str[i]; *c != '\0'; c++)
     {
@@ -152,7 +160,7 @@ void display()
 		0.0, 4.0, 0.0,
 		0.0, 1.0, 0.0);
 
-  CalculateFrameRate();
+  getFrameRate();
   show_text();
 
 	if (axisEnabled) glCallList(axisList);
@@ -211,6 +219,28 @@ void keyboard(unsigned char key, int x, int y)
         free(pb.List);
         createArray();
       }
+      break;
+    case '0':
+      emmitter_r += 0.1;
+      break;
+    case '9':
+      if (emmitter_r > 0.1)
+        emmitter_r -= 0.1;
+      break;
+    case 'q':
+      if (emit_rate > 1)
+        emit_rate -= 1;
+      else {
+        num_p += 1;
+        cout << "called";
+      }
+      break;
+    case 'w':
+      if (num_p > 1)
+        num_p -= 1;
+      else
+        emit_rate += 1;
+      break;
   } 
 }
 
@@ -269,7 +299,6 @@ int main(int argc, char *argv[])
 	initGraphics(argc, argv);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  /*glutIdleFunc(newParticles);*/
 	glutMainLoop();
 	free(pb.List);
 	return 0;
