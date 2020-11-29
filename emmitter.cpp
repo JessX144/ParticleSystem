@@ -14,11 +14,14 @@ using namespace glm;
 
 const int MaxParticles = 10000;
 
-void newParticle(ParticleList *pb) {
+void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels) {
 
 	vec3 origin = vec3(0.0, 0.0, 0.0);
-	vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
-	Particle p = { origin, water_colour, myRandomSpeed(), -9.8, 0.02, 0};
+  vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
+
+  float level_fac = 1 + num_levels * 0.2;
+
+	Particle p = { origin, water_colour, myRandomSpeed(speed_fac * level_fac, num_levels), gravity, 0.08, 0};
 	
 	if (pb->num_elements > pb->max_size) {
     pb->List[0] = pb->List[pb->num_elements];
@@ -30,11 +33,44 @@ void newParticle(ParticleList *pb) {
 
 }
 
-void newParticleScatter(ParticleList *pb, Particle p) {
+#define DEG_TO_RAD 0.017453293
 
-  vec4 water_colour = vec4(0.0, 0.0, 1.0, 0.8);
+void styleParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels) {
+  //vec3 origin = vec3(0.0, 0.0, 0.0);
+  //vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
+
+  //float x_s;
+  //float y_s;
+  //float z_s;
+
+  //for (int i = 0; i < 6; i++) {
+  //  float angle = myRandom() * 10 + i * 60;
+  //  x_s = cos(angle * 0.017453293) * 100;
+  //  y_s = sin(angle * 0.017453293) * 100 * num_levels;
+  //  z_s = cos(angle * 0.017453293) * 100;
+
+  //  vec3 sp = vec3(x_s, y_s, z_s);
+
+  //  Particle p = { origin, water_colour, sp, gravity, 0.08, 0 };
+
+
+  //  if (pb->num_elements > pb->max_size) {
+  //    pb->List[0] = pb->List[pb->num_elements];
+  //    pb->num_elements--;
+  //  }
+
+
+  //  pb->num_elements++;
+  //  pb->List[pb->num_elements] = p;
+  //}
+
+}
+
+void newParticleScatter(ParticleList *pb, Particle p, float gravity, float speed_fac) {
+
+  vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
   for (int i = 0; i < 5; i++) {
-    Particle new_p = { vec3(p.position.x, 0, p.position.z), water_colour, multVec(myRandomSpeed(), 0.1), -9.8, p.size *= 0.5, 1 };
+    Particle new_p = { vec3(p.position.x, 0, p.position.z), water_colour, multVec(myRandomSpeed(speed_fac, 1), 0.1), gravity, p.size *= 0.5, 1 };
     
     if (pb->num_elements > pb->max_size) {
       pb->List[0] = pb->List[pb->num_elements];
@@ -48,34 +84,26 @@ void newParticleScatter(ParticleList *pb, Particle p) {
 }
 
 // How particle effected by gravity 
-void gravity_motion(Particle *p) {
-
-  p->velocity.y += p->acceleration * 0.01;
-  p->position.x += p->velocity.x* 0.01;
-  p->position.z += p->velocity.z* 0.01;
-  p->position.y += p->velocity.y* 0.01;
+void gravity_motion(Particle *p, float delta_time) {
+  // milliseconds 
+  delta_time /= 1000;
+  p->velocity.y += p->acceleration * delta_time;
+  p->position.x += p->velocity.x* delta_time;
+  p->position.z += p->velocity.z* delta_time;
+  p->position.y += p->velocity.y* delta_time;
   
 }
 
-void update_particles(ParticleList *pb) {
+void update_particles(ParticleList *pb, float gravity, float delta_time, float speed_fac) {
 
 	for (int i = 0; i < pb->num_elements; i++) {
-    if (pb->List[i].num_b == 1 && pb->List[i].position.y <= 0) {
-      pb->List[i] = pb->List[pb->num_elements];
-      pb->num_elements--;
-    }
+
 		// if fallen lower on y axis, remove that element 
 		if (pb->List[i].position.y < 0) {
 
       // if the particle hasnt bounced before 
       if (pb->List[i].num_b == 0) {
-        newParticleScatter(pb, pb->List[i]);
-        pb->List[i] = pb->List[pb->num_elements];
-        pb->num_elements--;
-      }
-      else {
-        pb->List[i] = pb->List[pb->num_elements];
-        pb->num_elements--;
+        newParticleScatter(pb, pb->List[i], gravity, speed_fac);
       }
 
       pb->List[i] = pb->List[pb->num_elements];
@@ -83,7 +111,7 @@ void update_particles(ParticleList *pb) {
 		}
 
 		// recalculate position due to gravity 
-    gravity_motion(&pb->List[i]);
+    gravity_motion(&pb->List[i], delta_time);
 
 	}
 }

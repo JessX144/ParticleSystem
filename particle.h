@@ -11,7 +11,7 @@ using namespace glm;
 struct Particle {
 	vec3 position;
 	vec4 colour;
-	vec3 velocity;
+  vec3 velocity;
   float acceleration;
 	float size;
   int num_b;
@@ -22,6 +22,5 @@ struct ParticleList {
 	int num_elements;
 	int max_size;
 };
-
 
 #endif

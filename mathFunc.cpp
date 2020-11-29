@@ -9,12 +9,12 @@ double myRandom()
 	return (rand() / (double)RAND_MAX);
 }
 
-vec3 myRandomSpeed()
+vec3 myRandomSpeed(float speed_fac, int level)
 {
 
-  float x = -0.4 + (myRandom() * 0.8);
-  float y = 10 + (myRandom() * 0.4);
-  float z = -0.4 + (myRandom() * 0.8);
+  float x = (-0.6 + (myRandom() * 1.2)) * speed_fac / level;
+  float y = (10 + (myRandom() * 0.4)) * speed_fac;
+  float z = (-0.6 + (myRandom() * 1.2)) * speed_fac / level;
   
   vec3 v = vec3(x, y, z);
   return v;

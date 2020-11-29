@@ -15,7 +15,14 @@
 
 GLuint axisList;
 
-float emit_rate = 0.8;
+float old_time = 0;
+float delta_time = 0;
+
+int emit_rate = 1;
+
+int num_levels = 1;
+
+int counter = 0;
 
 int AXIS_SIZE = 200;
 int axisEnabled = 1;
@@ -25,6 +32,9 @@ GLfloat  eyex, eyey, eyez;
 
 int height = 800;
 int width = 600;
+
+float gravity = -9.8;
+float speed_fac = 1;
 
 using namespace std;
 using namespace glm;	
@@ -42,11 +52,23 @@ void createArray() {
 	}
 }
 
-void newParticles(int i) {
-  newParticle(&pb);
-  update_particles(&pb);
+void newParticles() {
+  // time since elapsed 
+  float sec = glutGet(GLUT_ELAPSED_TIME);
+  // time since last newParticles has been called 
+  delta_time = sec - old_time;
+  old_time = sec;
+
+  counter++;
+  // larger emit rate, fewer particles emmitted 
+  if (counter%emit_rate == 0) {
+    for (int i = 1; i <= num_levels; i++) {
+      newParticle(&pb, gravity, speed_fac, i);
+      //styleParticle(&pb, gravity, speed_fac, i);
+    }
+  }
+  update_particles(&pb, gravity, delta_time, speed_fac);
   glutPostRedisplay();
-  glutTimerFunc(emit_rate, newParticles, 0);
 }
 
 void special(int key, int xx, int yy) {
@@ -67,13 +89,13 @@ void special(int key, int xx, int yy) {
 			eyex = cos(deg*DEG_TO_RAD) * original_x - sin(deg*DEG_TO_RAD) * original_z;
 			eyez = sin(deg*DEG_TO_RAD) * original_x + cos(deg*DEG_TO_RAD) * original_z;
 			break;
-		case GLUT_KEY_UP:
-      if (eyez <= 200) {
+		case GLUT_KEY_DOWN:
+      if (eyez <= 40) {
         eyez += cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
       }
 			break;
-		case GLUT_KEY_DOWN:
-      if (eyez >= 20) {
+		case GLUT_KEY_UP:
+      if (eyez > 10) {
         eyez -= cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
       }
 			break;
@@ -85,10 +107,9 @@ void show_text() {
   unsigned char string[] = "test";
   int w;
   w = glutBitmapLength(GLUT_BITMAP_8_BY_13, string);
-  float x = .5; /* Centre in the middle of the window */
+  float x = .5; 
   glRasterPos2f(x - (float)width / 2, 0.);
 }
-
 
 void display()
 {
@@ -96,7 +117,7 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(eyex, eyey, eyez,
-		0.0, 0.0, 0.0,
+		0.0, 2.0, 0.0,
 		0.0, 1.0, 0.0);
 
 	if (axisEnabled) glCallList(axisList);
@@ -105,7 +126,8 @@ void display()
 	{
 		glPushMatrix();
 		glTranslatef(pb.List[i].position.x, pb.List[i].position.y, pb.List[i].position.z);
-		glutWireSphere(pb.List[i].size, 20, 20);
+    glColor4f(pb.List[i].colour[0], pb.List[i].colour[1], pb.List[i].colour[2], pb.List[i].colour[3]);
+    glutSolidSphere(pb.List[i].size, 20, 20);
 		glPopMatrix();
 	}
 	glutSwapBuffers();
@@ -113,12 +135,47 @@ void display()
 
 void keyboard(unsigned char key, int x, int y)
 {
-	if (key == 27) exit(0);
+  switch (key) {
+    case 27:
+      exit(0);
+      break;
+    case '1':
+      if (gravity < -1)
+        gravity += 1;
+      break;
+    case '2':
+      gravity -= 1;
+      break;
+    case '3':
+      if (emit_rate > 1)
+        emit_rate -= 1;
+      break;
+    case '4':
+      emit_rate += 1;
+      break;
+    case '5':
+      if (speed_fac > 0.1)
+        speed_fac -= 0.1;
+      break;
+    case '6':
+      speed_fac += 0.1;
+      break;
+    case '7':
+      if (num_levels > 1)
+        num_levels -= 1;
+      break;
+    case '8': 
+      if (num_levels <= 2)
+        num_levels += 1;
+      break;
+  } 
+
+
 }
 
 void reshape(int width, int height)
 {
-	glClearColor(0.9, 0.9, 0.9, 0.0);
+	glClearColor(0.1, 0.1, 0.1, 0.0);
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -147,8 +204,8 @@ void makeAxes() {
 void initGraphics(int argc, char *argv[])
 {
 	eyex = 0.0;
-	eyey = 1.7;
-	eyez = 20.0;
+	eyey = 0.0;
+	eyez = 10.0;
 
 	createArray();
 
@@ -169,8 +226,9 @@ int main(int argc, char *argv[])
 	double f;
 	srand(time(NULL));
 	initGraphics(argc, argv);
-	glEnable(GL_POINT_SMOOTH);
-  glutTimerFunc(emit_rate, newParticles, 0);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glutIdleFunc(newParticles);
 	glutMainLoop();
 	free(pb.List);
 	return 0;
