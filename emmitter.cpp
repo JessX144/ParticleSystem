@@ -14,6 +14,8 @@ using namespace glm;
 
 const int MaxParticles = 10000;
 
+#define DEG_TO_RAD 0.017453293
+
 void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels) {
 
 	vec3 origin = vec3(0.0, 0.0, 0.0);
@@ -30,39 +32,6 @@ void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_level
 
 	pb->num_elements++;
 	pb->List[pb->num_elements] = p;
-
-}
-
-#define DEG_TO_RAD 0.017453293
-
-void styleParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels) {
-  //vec3 origin = vec3(0.0, 0.0, 0.0);
-  //vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
-
-  //float x_s;
-  //float y_s;
-  //float z_s;
-
-  //for (int i = 0; i < 6; i++) {
-  //  float angle = myRandom() * 10 + i * 60;
-  //  x_s = cos(angle * 0.017453293) * 100;
-  //  y_s = sin(angle * 0.017453293) * 100 * num_levels;
-  //  z_s = cos(angle * 0.017453293) * 100;
-
-  //  vec3 sp = vec3(x_s, y_s, z_s);
-
-  //  Particle p = { origin, water_colour, sp, gravity, 0.08, 0 };
-
-
-  //  if (pb->num_elements > pb->max_size) {
-  //    pb->List[0] = pb->List[pb->num_elements];
-  //    pb->num_elements--;
-  //  }
-
-
-  //  pb->num_elements++;
-  //  pb->List[pb->num_elements] = p;
-  //}
 
 }
 

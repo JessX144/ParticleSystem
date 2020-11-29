@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-
 #include <GL\glew.h>
 #include <GL\freeglut.h>
 #include "particle.h" 
 #include "emmitter.h"
 #include "mathFunc.h"
 #include <iostream>
+#include <string>
 
 #define DEG_TO_RAD 0.017453293
 #define ZOOM_SPEED  10.0
@@ -17,22 +17,21 @@ GLuint axisList;
 
 float old_time = 0;
 float delta_time = 0;
-
-int emit_rate = 1;
-
-int num_levels = 1;
-
 int counter = 0;
-
 int AXIS_SIZE = 200;
 int axisEnabled = 1;
-const int MaxParticles = 10000;
-
-GLfloat  eyex, eyey, eyez;   
-
+GLfloat  eyex, eyey, eyez;
 int height = 800;
 int width = 600;
+static float fps = 0.0f;
+float framesPerSec = 0.0;
+static float lastTime = 0.0f;
+int space_c = 0;
 
+// MODIFIABLE VARIABLES
+int emit_rate = 1;
+int num_levels = 1;
+const int MaxParticles = 10000;
 float gravity = -9.8;
 float speed_fac = 1;
 
@@ -64,11 +63,24 @@ void newParticles() {
   if (counter%emit_rate == 0) {
     for (int i = 1; i <= num_levels; i++) {
       newParticle(&pb, gravity, speed_fac, i);
-      //styleParticle(&pb, gravity, speed_fac, i);
     }
   }
   update_particles(&pb, gravity, delta_time, speed_fac);
   glutPostRedisplay();
+}
+
+// called every display/frame 
+void CalculateFrameRate()
+{
+  float currentTime = GetTickCount() * 0.001f;
+  ++fps;
+  if (currentTime - lastTime >= 1.0f)
+  {
+    //cout << currentTime - lastTime;
+    framesPerSec = fps / (currentTime - lastTime);
+    lastTime = currentTime;
+    fps = 0;
+  }
 }
 
 void special(int key, int xx, int yy) {
@@ -103,12 +115,32 @@ void special(int key, int xx, int yy) {
 
 }
 
-void show_text() {
-  unsigned char string[] = "test";
-  int w;
-  w = glutBitmapLength(GLUT_BITMAP_8_BY_13, string);
-  float x = .5; 
-  glRasterPos2f(x - (float)width / 2, 0.);
+void show_text()
+{
+  int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_18)/20;
+  char g[30], e[30], m[30], s[30], f[30];
+  char *c;
+  sprintf_s(g, "gravity: %f", gravity);
+  sprintf_s(e, "emit rate: %d", emit_rate);
+  sprintf_s(m, "max particles: %d", MaxParticles);
+  sprintf_s(s, "speed factor: %f", speed_fac);
+  if (framesPerSec != 0) {
+    sprintf_s(f, "fps: %f", framesPerSec);
+  }
+
+  char * str[5] = { g, e, m, s, f };
+
+  glColor3f(1.0, 1.0, 1.0);
+  glRasterPos3f(2, 2, 2);
+
+  for (int i = 0; i < 5; i++) {
+    glRasterPos3f(2, 2 + i * lineHeight, 2);
+    for (c = str[i]; *c != '\0'; c++)
+    {
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+  }
+
 }
 
 void display()
@@ -117,8 +149,11 @@ void display()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(eyex, eyey, eyez,
-		0.0, 2.0, 0.0,
+		0.0, 4.0, 0.0,
 		0.0, 1.0, 0.0);
+
+  CalculateFrameRate();
+  show_text();
 
 	if (axisEnabled) glCallList(axisList);
 
@@ -168,9 +203,15 @@ void keyboard(unsigned char key, int x, int y)
       if (num_levels <= 2)
         num_levels += 1;
       break;
+    case ' ':
+      space_c++;
+      if (space_c == 1)
+        glutIdleFunc(newParticles);
+      else {
+        free(pb.List);
+        createArray();
+      }
   } 
-
-
 }
 
 void reshape(int width, int height)
@@ -228,7 +269,7 @@ int main(int argc, char *argv[])
 	initGraphics(argc, argv);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glutIdleFunc(newParticles);
+  /*glutIdleFunc(newParticles);*/
 	glutMainLoop();
 	free(pb.List);
 	return 0;
