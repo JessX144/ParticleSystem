@@ -170,6 +170,8 @@ void display()
 		glPushMatrix();
 		glTranslatef(pb.List[i].position.x, pb.List[i].position.y, pb.List[i].position.z);
     glColor4f(pb.List[i].colour[0], pb.List[i].colour[1], pb.List[i].colour[2], pb.List[i].colour[3]);
+    // Quads seem to have no difference on the speed to render 
+    // Makes sphere of radius size
     glutSolidSphere(pb.List[i].size, 20, 20);
 		glPopMatrix();
 	}

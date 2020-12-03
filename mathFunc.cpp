@@ -13,7 +13,7 @@ double myRandom()
 
 vec3 myRandomSpeed(float speed_fac, int level)
 {
-
+  // y is between 10 and 10.4
   float x = (-0.6 + (myRandom() * 1.2)) * speed_fac / level;
   float y = (10 + (myRandom() * 0.4)) * speed_fac;
   float z = (-0.6 + (myRandom() * 1.2)) * speed_fac / level;

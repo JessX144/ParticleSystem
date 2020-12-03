@@ -14,6 +14,7 @@ struct Particle {
   vec3 velocity;
   float acceleration;
 	float size;
+  float mass;
   int num_b;
 };
 
