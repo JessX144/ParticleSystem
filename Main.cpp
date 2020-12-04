@@ -37,6 +37,7 @@ float speed_fac = 1;
 float emmitter_r = 0;
 int num_p = 1;
 float coeff_of_rest = 0.2;
+float radius = 0.08;
 
 using namespace std;
 using namespace glm;	
@@ -68,7 +69,7 @@ void newParticles() {
   if (counter%emit_rate == 0) {
     for (int j = 0; j < num_p; j++) {
       for (int i = 1; i <= num_levels; i++) {
-        newParticle(&pb, gravity, speed_fac, i, emmitter_r);
+        newParticle(&pb, gravity, speed_fac, i, emmitter_r, radius);
       }
     }
   }
@@ -127,7 +128,7 @@ void show_text() {
   GLint matrixMode;
 
   int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_12) / 24;
-  char g[30], e[30], m[30], s[30], f[30], r[30], n[30];
+  char g[30], e[30], m[30], s[30], f[30], r[30], n[30], co[30];
   // default values are 1 
   float particle_scale_fac = (float)num_p / (float)emit_rate;
   sprintf_s(g, "gravity: %f", gravity);
@@ -135,9 +136,10 @@ void show_text() {
   sprintf_s(s, "speed factor: %f", speed_fac);
   sprintf_s(r, "emmitter radius: %f", emmitter_r);
   sprintf_s(n, "num particles scale: %f", particle_scale_fac);
+  sprintf_s(co, "coef of rest: %f", coeff_of_rest);
   sprintf_s(f, "fps: %d", framesPerSec);
 
-  char * str[6] = { g, m, s, r, n, f };
+  char * str[7] = { g, m, s, r, n, co, f };
 
   glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
 
@@ -150,11 +152,11 @@ void show_text() {
   glLoadIdentity();
   glPushAttrib(GL_COLOR_BUFFER_BIT);   
   glColor3f(1, 1, 1);
-  glRasterPos3f(0.05, 0.1, 0.0);
-  for (int i = 0; i < 6; i++) {
+  glRasterPos3f(0, 0.1, 0.0);
+  for (int i = 0; i < 7; i++) {
     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, 10);
     for (c = str[i]; *c; c++) {
-      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (int)*c);
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, (int)*c);
     }
   }
 
@@ -163,37 +165,6 @@ void show_text() {
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(matrixMode);
-}
-
-void show_text_old()
-{
-  int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_18)/20;
-  char g[30], e[30], m[30], s[30], f[30], r[30], n[30];
-  char *c;
-
-  // default values are 1 
-  float particle_scale_fac = (float)num_p / (float)emit_rate;
-
-  sprintf_s(g, "gravity: %f", gravity);
-  sprintf_s(m, "max particles: %d", MaxParticles);
-  sprintf_s(s, "speed factor: %f", speed_fac);
-  sprintf_s(r, "emmitter radius: %f", emmitter_r);
-  sprintf_s(n, "num particles scale: %f", particle_scale_fac);
-  sprintf_s(f, "fps: %d", framesPerSec);
-
-  char * str[6] = { g, m, s, r, n, f };
-
-  glColor3f(1.0, 1.0, 1.0);
-  glRasterPos3f(2, 2, 2);
-
-  for (int i = 0; i < 6; i++) {
-    glRasterPos3f(2, 2 + i * lineHeight, 2);
-    for (c = str[i]; *c != '\0'; c++)
-    {
-      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-    }
-  }
-
 }
 
 void display()
@@ -229,48 +200,6 @@ void keyboard(unsigned char key, int x, int y)
     case 27:
       exit(0);
       break;
-    case '1':
-      if (gravity < -1)
-        gravity += 1;
-      break;
-    case '2':
-      gravity -= 1;
-      break;
-    case '3':
-      if (emit_rate > 1)
-        emit_rate -= 1;
-      else
-        num_p += 1;
-      cout << "emit rate: ";
-      cout << emit_rate;
-      cout << "num p: ";
-      cout << num_p;
-      break;
-    case '4':
-      if (num_p > 1)
-        num_p -= 1;
-      else
-        emit_rate += 1;
-      cout << "emit rate: ";
-      cout << emit_rate;
-      cout << "num p: ";
-      cout << num_p;
-      break;
-    case '5':
-      if (speed_fac > 0.1)
-        speed_fac -= 0.1;
-      break;
-    case '6':
-      speed_fac += 0.1;
-      break;
-    case '7':
-      if (num_levels > 1)
-        num_levels -= 1;
-      break;
-    case '8': 
-      if (num_levels <= 2)
-        num_levels += 1;
-      break;
     case ' ':
       space_c++;
       if (space_c == 1)
@@ -279,21 +208,6 @@ void keyboard(unsigned char key, int x, int y)
         free(pb.List);
         createArray();
       }
-      break;
-    case '0':
-      emmitter_r += 0.1;
-      break;
-    case '9':
-      if (emmitter_r > 0.1)
-        emmitter_r -= 0.1;
-      break;
-    case 'd':
-      if (coeff_of_rest >= 0.1)
-        coeff_of_rest -= 0.1;
-      break;
-    case 's':
-      //if (coeff_of_rest <= 0.9)
-      coeff_of_rest += 0.1;
       break;
   } 
 }
@@ -326,6 +240,136 @@ void makeAxes() {
 	glEndList();
 }
 
+void menu(int item)
+{
+}
+
+void coeffmenu(int item)
+{
+  switch (item)
+  {
+  case 11: {
+    if (coeff_of_rest >= 0.1)
+      coeff_of_rest -= 0.1;
+  }
+          break;
+  case 12: {
+    //if (coeff_of_rest <= 0.9)
+    coeff_of_rest += 0.1;
+  }
+  break;
+  default: {}
+            break;
+  }
+  glutPostRedisplay();
+  return;
+}
+
+void radiusmenu(int item)
+{
+  switch (item)
+  {
+  case 9: {
+    emmitter_r += 0.1;
+  }
+          break;
+  case 10: {
+    if (emmitter_r > 0.1)
+      emmitter_r -= 0.1;
+  }
+  break;
+  default: {}
+            break;
+  }
+  glutPostRedisplay();
+  return;
+}
+
+void levelmenu(int item)
+{
+  switch (item)
+  {
+  case 6: {
+    num_levels = 1;
+  }
+          break;
+  case 7: {
+    num_levels = 2;
+  }
+          break;
+  case 8: {
+    num_levels = 3;
+  }
+  default: {}
+           break;
+  }
+  glutPostRedisplay();
+  return;
+}
+
+void speedmenu(int item)
+{
+  switch (item)
+  {
+  case 5: {
+    if (speed_fac > 0.1)
+      speed_fac -= 0.1;
+  }
+          break;
+  case 4: {
+    speed_fac += 0.1;
+  }
+  default: {}
+           break;
+  }
+  glutPostRedisplay();
+  return;
+}
+
+void gravmenu(int item)
+{
+  switch (item)
+  {
+  case 0: {
+    if (gravity < -1)
+      gravity += 1;
+  }
+          break;
+  case 1: {
+    gravity -= 1;
+  }
+  default: {}
+           break;
+  }
+  glutPostRedisplay();
+  return;
+}
+
+void emitmenu(int item)
+{
+  switch (item)
+  {
+  case 2: {
+    if (emit_rate > 1)
+      emit_rate -= 1;
+    else
+      num_p += 1;
+  }
+          break;
+  case 3: {
+    if (num_p > 1)
+      num_p -= 1;
+    else
+      emit_rate += 1;
+  }
+  default: {}
+           break;
+  }
+  glutPostRedisplay();
+  return;
+}
+
+
 void initGraphics(int argc, char *argv[])
 {
 	eyex = 0.0;
@@ -340,6 +384,42 @@ void initGraphics(int argc, char *argv[])
 	glutInitDisplayMode(GLUT_DOUBLE);
 	glutCreateWindow("COMP37111 Particles");
 	glutDisplayFunc(display);
+
+  int gravity_menu = glutCreateMenu(gravmenu);
+  glutAddMenuEntry("increase", 0);
+  glutAddMenuEntry("decrease", 1);
+
+  int emit_menu = glutCreateMenu(emitmenu);
+  glutAddMenuEntry("increase", 2);
+  glutAddMenuEntry("decrease", 3);
+
+  int speed_menu = glutCreateMenu(speedmenu);
+  glutAddMenuEntry("increase", 4);
+  glutAddMenuEntry("decrease", 5);
+
+  int level_menu = glutCreateMenu(levelmenu);
+  glutAddMenuEntry("1", 6);
+  glutAddMenuEntry("2", 7);
+  glutAddMenuEntry("3", 8);
+
+  int coeff_menu = glutCreateMenu(coeffmenu);
+  glutAddMenuEntry("increase", 12);
+  glutAddMenuEntry("decrease", 11);
+  
+  int radius_menu = glutCreateMenu(radiusmenu);
+  glutAddMenuEntry("increase", 9);
+  glutAddMenuEntry("decrease", 10);
+
+  int mainMenu = glutCreateMenu(menu);
+  glutAddSubMenu("gravity", gravity_menu);
+  glutAddSubMenu("emit rate", emit_menu);
+  glutAddSubMenu("velocity", speed_menu);
+  glutAddSubMenu("levels", level_menu);
+  glutAddSubMenu("emit radius", radius_menu);
+  glutAddSubMenu("coef of restit", coeff_menu);
+
+  glutAttachMenu(GLUT_RIGHT_BUTTON);
+
 	glutKeyboardFunc(keyboard);
 	glutSpecialFunc(special);
 	glutReshapeFunc(reshape);
@@ -351,6 +431,7 @@ int main(int argc, char *argv[])
 	double f;
 	srand(time(NULL));
 	initGraphics(argc, argv);
+
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glutMainLoop();

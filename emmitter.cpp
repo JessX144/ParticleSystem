@@ -16,12 +16,11 @@ const int MaxParticles = 10000;
 #define PI 3.14159;
 #define DEG_TO_RAD 0.017453293
 
-void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels, float r) {
+void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_levels, float r, float radius) {
 
   vec3 emmitter_shape = circularPos(r);
   vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
-  // in meters 
-  float radius = 0.08;
+
   // given water sphere of radius 0.08, mass = volume of sphere, water has density 1000kg/cubic m
   float mass = pow(radius, 3) * 4 / 3 * 1000 * PI;
 
@@ -64,7 +63,7 @@ void newParticleScatter(ParticleList *pb, Particle p, float gravity, float speed
 
 // How particle effected by gravity 
 // 2 forces: gravity and air resistance 
-void gravity_motion(Particle *p, float delta_time) {
+void update_motion(Particle *p, float delta_time) {
   // milliseconds 
   delta_time /= 1000;
 
@@ -82,10 +81,6 @@ void gravity_motion(Particle *p, float delta_time) {
   p->position.z += p->velocity.z* delta_time;
   p->position.y += p->velocity.y* delta_time;
   
-}
-
-void collisions(ParticleList *pb) {
-
 }
 
 void update_particles(ParticleList *pb, float gravity, float delta_time, float speed_fac, float coeff_of_rest) {
@@ -106,7 +101,7 @@ void update_particles(ParticleList *pb, float gravity, float delta_time, float s
 		}
 
 		// recalculate position due to gravity 
-    gravity_motion(&pb->List[i], delta_time);
+    update_motion(&pb->List[i], delta_time);
 
 	}
 }
