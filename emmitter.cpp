@@ -1,4 +1,4 @@
-#include <stdlib.h>
+﻿#include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 #include <math.h>
@@ -38,25 +38,27 @@ void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_level
 
 }
 
-void newParticleScatter(ParticleList *pb, Particle p, float gravity, float speed_fac) {
+// https://royalsocietypublishing.org/doi/pdf/10.1098/rspa.1964.0161
+void newParticleScatter(ParticleList *pb, Particle p, float gravity, float speed_fac, float coeff_of_rest) {
 
   vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.5);
-  for (int i = 0; i < 5; i++) {
-    // in meters 
-    float radius = p.size * 0.5;
-    // given water sphere of radius 0.08, mass = volume of sphere, water has density 1000kg/cubic meter 
-    float mass = pow(radius, 3) * 4 / 3 * 1000 * PI;
-    
-    Particle new_p = { vec3(p.position.x, 0, p.position.z), water_colour, multVec(myRandomSpeed(speed_fac, 1), 0.1), gravity, radius, mass, 1 };
-    
-    if (pb->num_elements > pb->max_size) {
-      pb->List[0] = pb->List[pb->num_elements];
-      pb->num_elements--;
-    }
 
-    pb->num_elements++;
-    pb->List[pb->num_elements] = new_p;
+  // proportional to speed and size 
+  // float rel_weber_num = pow(vec_size(p.velocity), 2) * 2 * p.size;
+  // y = 0.04892x − 0.2601
+  
+  // given water sphere of radius 0.08, mass = volume of sphere, water has density 1000kg/cubic meter 
+  float mass = pow(p.size, 3) * 4 / 3 * 1000 * PI;
+
+  Particle new_p = { vec3(p.position.x, 0, p.position.z), water_colour, multVec(myRandomSpeed(coeff_of_rest, 1), 0.1), gravity, p.size, mass, 1 };
+
+  if (pb->num_elements > pb->max_size) {
+    pb->List[0] = pb->List[pb->num_elements];
+    pb->num_elements--;
   }
+
+  pb->num_elements++;
+  pb->List[pb->num_elements] = new_p;
 
 }
 
@@ -82,7 +84,11 @@ void gravity_motion(Particle *p, float delta_time) {
   
 }
 
-void update_particles(ParticleList *pb, float gravity, float delta_time, float speed_fac) {
+void collisions(ParticleList *pb) {
+
+}
+
+void update_particles(ParticleList *pb, float gravity, float delta_time, float speed_fac, float coeff_of_rest) {
 
 	for (int i = 0; i < pb->num_elements; i++) {
 
@@ -91,7 +97,7 @@ void update_particles(ParticleList *pb, float gravity, float delta_time, float s
 
       // if the particle hasnt bounced before 
       if (pb->List[i].num_b == 0) {
-        newParticleScatter(pb, pb->List[i], gravity, speed_fac);
+        newParticleScatter(pb, pb->List[i], gravity, speed_fac, coeff_of_rest);
       }
       // instead of removing the element in its position and shifting, swap element with last 
       // and discount last element from being considered

@@ -1,5 +1,6 @@
 #include <glm.hpp>
 #include "mathFunc.h"
+#include <math.h>
 
 #define PI 3.14159;
 
@@ -35,4 +36,9 @@ vec3 circularPos(float r) {
   float x = r * cos(theta);
   float z = r * sin(theta);
   return vec3(x, 0, z);
+}
+
+float vec_size(vec3 v) {
+  float x = pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2);
+  return sqrt(x);
 }

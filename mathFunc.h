@@ -13,4 +13,6 @@ vec3 multVec(vec3 vector, float f);
 
 vec3 circularPos(float r);
 
+float vec_size(vec3 v);
+
 #endif

@@ -23,19 +23,20 @@ int axisEnabled = 1;
 GLfloat  eyex, eyey, eyez;
 int height = 800;
 int width = 600;
-static float fps = 0.0f;
-float framesPerSec = 0.0;
+int fps = 0;
+int framesPerSec = 0.0;
 static float lastTime = 0.0f;
 int space_c = 0;
 
 // MODIFIABLE VARIABLES
 int emit_rate = 1;
 int num_levels = 1;
-const int MaxParticles = 10000;
+const int MaxParticles = 1000;
 float gravity = -9.8;
 float speed_fac = 1;
 float emmitter_r = 0;
 int num_p = 1;
+float coeff_of_rest = 0.2;
 
 using namespace std;
 using namespace glm;	
@@ -63,6 +64,7 @@ void newParticles() {
   counter++;
 
   // larger emit rate, fewer particles emmitted 
+  // allows us to get slower rate than base rate of idle func
   if (counter%emit_rate == 0) {
     for (int j = 0; j < num_p; j++) {
       for (int i = 1; i <= num_levels; i++) {
@@ -71,7 +73,7 @@ void newParticles() {
     }
   }
 
-  update_particles(&pb, gravity, delta_time, speed_fac);
+  update_particles(&pb, gravity, delta_time, speed_fac, coeff_of_rest);
   glutPostRedisplay();
 }
 
@@ -107,41 +109,84 @@ void special(int key, int xx, int yy) {
 			eyez = sin(deg*DEG_TO_RAD) * original_x + cos(deg*DEG_TO_RAD) * original_z;
 			break;
 		case GLUT_KEY_DOWN:
-      if (eyez <= 40) {
-        eyez += cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
+      if (eyez > 10) {
+        eyez -= cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
       }
 			break;
 		case GLUT_KEY_UP:
-      if (eyez > 10) {
-        eyez -= cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
+      if (eyez <= 40) {
+        eyez += cos(0 * DEG_TO_RAD)*ZOOM_SPEED;
       }
 			break;
 	}
 
 }
 
-void show_text()
+void show_text() {
+  char* c;
+  GLint matrixMode;
+
+  int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_12) / 24;
+  char g[30], e[30], m[30], s[30], f[30], r[30], n[30];
+  // default values are 1 
+  float particle_scale_fac = (float)num_p / (float)emit_rate;
+  sprintf_s(g, "gravity: %f", gravity);
+  sprintf_s(m, "max particles: %d", MaxParticles);
+  sprintf_s(s, "speed factor: %f", speed_fac);
+  sprintf_s(r, "emmitter radius: %f", emmitter_r);
+  sprintf_s(n, "num particles scale: %f", particle_scale_fac);
+  sprintf_s(f, "fps: %d", framesPerSec);
+
+  char * str[6] = { g, m, s, r, n, f };
+
+  glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
+
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  gluOrtho2D(0.0, 1.0, 0.0, 1.0);
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  glPushAttrib(GL_COLOR_BUFFER_BIT);   
+  glColor3f(1, 1, 1);
+  glRasterPos3f(0.05, 0.1, 0.0);
+  for (int i = 0; i < 6; i++) {
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, 10);
+    for (c = str[i]; *c; c++) {
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, (int)*c);
+    }
+  }
+
+  glPopAttrib();
+  glPopMatrix();
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(matrixMode);
+}
+
+void show_text_old()
 {
   int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_18)/20;
   char g[30], e[30], m[30], s[30], f[30], r[30], n[30];
   char *c;
+
+  // default values are 1 
+  float particle_scale_fac = (float)num_p / (float)emit_rate;
+
   sprintf_s(g, "gravity: %f", gravity);
-  sprintf_s(e, "emit rate: %d", emit_rate);
   sprintf_s(m, "max particles: %d", MaxParticles);
   sprintf_s(s, "speed factor: %f", speed_fac);
   sprintf_s(r, "emmitter radius: %f", emmitter_r);
-  sprintf_s(n, "num particles scale: %d", num_p);
+  sprintf_s(n, "num particles scale: %f", particle_scale_fac);
+  sprintf_s(f, "fps: %d", framesPerSec);
 
-  if (framesPerSec != 0) {
-    sprintf_s(f, "fps: %f", framesPerSec);
-  }
-
-  char * str[7] = { g, e, m, s, f, r, n };
+  char * str[6] = { g, m, s, r, n, f };
 
   glColor3f(1.0, 1.0, 1.0);
   glRasterPos3f(2, 2, 2);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 6; i++) {
     glRasterPos3f(2, 2 + i * lineHeight, 2);
     for (c = str[i]; *c != '\0'; c++)
     {
@@ -194,9 +239,22 @@ void keyboard(unsigned char key, int x, int y)
     case '3':
       if (emit_rate > 1)
         emit_rate -= 1;
+      else
+        num_p += 1;
+      cout << "emit rate: ";
+      cout << emit_rate;
+      cout << "num p: ";
+      cout << num_p;
       break;
     case '4':
-      emit_rate += 1;
+      if (num_p > 1)
+        num_p -= 1;
+      else
+        emit_rate += 1;
+      cout << "emit rate: ";
+      cout << emit_rate;
+      cout << "num p: ";
+      cout << num_p;
       break;
     case '5':
       if (speed_fac > 0.1)
@@ -229,19 +287,13 @@ void keyboard(unsigned char key, int x, int y)
       if (emmitter_r > 0.1)
         emmitter_r -= 0.1;
       break;
-    case 'q':
-      if (emit_rate > 1)
-        emit_rate -= 1;
-      else {
-        num_p += 1;
-        cout << "called";
-      }
+    case 'd':
+      if (coeff_of_rest >= 0.1)
+        coeff_of_rest -= 0.1;
       break;
-    case 'w':
-      if (num_p > 1)
-        num_p -= 1;
-      else
-        emit_rate += 1;
+    case 's':
+      //if (coeff_of_rest <= 0.9)
+      coeff_of_rest += 0.1;
       break;
   } 
 }
