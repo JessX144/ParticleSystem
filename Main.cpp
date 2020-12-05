@@ -27,6 +27,7 @@ int fps = 0;
 int framesPerSec = 0.0;
 static float lastTime = 0.0f;
 int space_c = 0;
+int collide_count = 1;
 
 // MODIFIABLE VARIABLES
 int emit_rate = 1;
@@ -38,6 +39,7 @@ float emmitter_r = 0;
 int num_p = 1;
 float coeff_of_rest = 0.2;
 float radius = 0.08;
+bool class_part = false;
 
 using namespace std;
 using namespace glm;	
@@ -74,7 +76,7 @@ void newParticles() {
     }
   }
 
-  update_particles(&pb, gravity, delta_time, speed_fac, coeff_of_rest);
+  update_particles(&pb, gravity, delta_time, speed_fac, coeff_of_rest, class_part);
   glutPostRedisplay();
 }
 
@@ -120,7 +122,6 @@ void special(int key, int xx, int yy) {
       }
 			break;
 	}
-
 }
 
 void show_text() {
@@ -128,7 +129,7 @@ void show_text() {
   GLint matrixMode;
 
   int lineHeight = glutBitmapHeight(GLUT_BITMAP_HELVETICA_12) / 24;
-  char g[30], e[30], m[30], s[30], f[30], r[30], n[30], co[30];
+  char g[30], e[30], m[30], s[30], f[30], r[30], n[30], co[30], si[30], p[30];
   // default values are 1 
   float particle_scale_fac = (float)num_p / (float)emit_rate;
   sprintf_s(g, "gravity: %f", gravity);
@@ -137,9 +138,15 @@ void show_text() {
   sprintf_s(r, "emmitter radius: %f", emmitter_r);
   sprintf_s(n, "num particles scale: %f", particle_scale_fac);
   sprintf_s(co, "coef of rest: %f", coeff_of_rest);
+  sprintf_s(si, "particle radius: %f", radius);
   sprintf_s(f, "fps: %d", framesPerSec);
 
-  char * str[7] = { g, m, s, r, n, co, f };
+  if (class_part)
+    sprintf_s(p, "collisions: on");
+  else
+    sprintf_s(p, "collisions: off");
+
+  char * str[9] = { g, m, s, r, n, co, f, si, p };
 
   glGetIntegerv(GL_MATRIX_MODE, &matrixMode);
 
@@ -153,8 +160,8 @@ void show_text() {
   glPushAttrib(GL_COLOR_BUFFER_BIT);   
   glColor3f(1, 1, 1);
   glRasterPos3f(0, 0.1, 0.0);
-  for (int i = 0; i < 7; i++) {
-    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, 10);
+  for (int i = 0; i < 9; i++) {
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, 10);
     for (c = str[i]; *c; c++) {
       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, (int)*c);
     }
@@ -227,21 +234,28 @@ void makeAxes() {
 	glNewList(axisList, GL_COMPILE);
 	glLineWidth(2.0);
 	glBegin(GL_LINES);
-	glColor3f(1.0, 0.0, 0.0);     
+	glColor4f(1.0, 0.0, 0.0, 0.2);     
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(AXIS_SIZE, 0.0, 0.0);
-	glColor3f(0.0, 1.0, 0.0);       
+	glColor4f(0.0, 1.0, 0.0, 0.2);       
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(0.0, AXIS_SIZE, 0.0);
-	glColor3f(0.0, 0.0, 1.0);      
+	glColor4f(0.0, 0.0, 1.0, 0.2);      
 	glVertex3f(0.0, 0.0, 0.0);
 	glVertex3f(0.0, 0.0, AXIS_SIZE);
 	glEnd();
 	glEndList();
 }
 
-void menu(int item)
-{
+void menu(int item){
+  collide_count++;
+  switch (item) {
+  case 15: 
+    if (collide_count % 2 == 0)
+      class_part = true;
+    else
+      class_part = false;
+  }
 }
 
 void coeffmenu(int item)
@@ -258,11 +272,7 @@ void coeffmenu(int item)
     coeff_of_rest += 0.1;
   }
   break;
-  default: {}
-            break;
   }
-  glutPostRedisplay();
-  return;
 }
 
 void radiusmenu(int item)
@@ -278,11 +288,7 @@ void radiusmenu(int item)
       emmitter_r -= 0.1;
   }
   break;
-  default: {}
-            break;
   }
-  glutPostRedisplay();
-  return;
 }
 
 void levelmenu(int item)
@@ -300,11 +306,8 @@ void levelmenu(int item)
   case 8: {
     num_levels = 3;
   }
-  default: {}
-           break;
+  break;
   }
-  glutPostRedisplay();
-  return;
 }
 
 void speedmenu(int item)
@@ -319,11 +322,8 @@ void speedmenu(int item)
   case 4: {
     speed_fac += 0.1;
   }
-  default: {}
-           break;
+  break;
   }
-  glutPostRedisplay();
-  return;
 }
 
 void gravmenu(int item)
@@ -338,11 +338,8 @@ void gravmenu(int item)
   case 1: {
     gravity -= 1;
   }
-  default: {}
-           break;
+  break;
   }
-  glutPostRedisplay();
-  return;
 }
 
 void emitmenu(int item)
@@ -362,13 +359,25 @@ void emitmenu(int item)
     else
       emit_rate += 1;
   }
-  default: {}
-           break;
+  break;
   }
-  glutPostRedisplay();
-  return;
 }
 
+void sizemenu(int item)
+{
+  switch (item)
+  {
+  case 13: {
+    if (radius > 0.01)
+      radius -= 0.01;
+  }
+  break;
+  case 14: {
+    radius += 0.01;
+  }
+  break;
+  }
+}
 
 void initGraphics(int argc, char *argv[])
 {
@@ -405,6 +414,10 @@ void initGraphics(int argc, char *argv[])
   int coeff_menu = glutCreateMenu(coeffmenu);
   glutAddMenuEntry("increase", 12);
   glutAddMenuEntry("decrease", 11);
+
+  int size_menu = glutCreateMenu(sizemenu);
+  glutAddMenuEntry("decrease", 13);
+  glutAddMenuEntry("increase", 14);
   
   int radius_menu = glutCreateMenu(radiusmenu);
   glutAddMenuEntry("increase", 9);
@@ -417,6 +430,8 @@ void initGraphics(int argc, char *argv[])
   glutAddSubMenu("levels", level_menu);
   glutAddSubMenu("emit radius", radius_menu);
   glutAddSubMenu("coef of restit", coeff_menu);
+  glutAddSubMenu("particle size", size_menu);
+  glutAddMenuEntry("collisions", 15);
 
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 

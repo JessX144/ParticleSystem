@@ -42,3 +42,12 @@ float vec_size(vec3 v) {
   float x = pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2);
   return sqrt(x);
 }
+
+float vec_dist(vec3 v1, vec3 v2) {
+  float xdiff = v1.x - v2.x;
+  float ydiff = v1.y - v2.y;
+  float zdiff = v1.z - v2.z;
+
+  float x = pow(xdiff, 2) + pow(ydiff, 2) + pow(zdiff, 2);
+  return sqrt(x);
+}
