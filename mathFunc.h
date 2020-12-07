@@ -17,4 +17,6 @@ float vec_size(vec3 v);
 
 float vec_dist(vec3 v1, vec3 v2);
 
+bool is_prob(float p);
+
 #endif

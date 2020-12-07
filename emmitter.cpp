@@ -10,8 +10,6 @@
 #include "emmitter.h"
 
 #include <set>
-
-#include <unordered_set>
 #include <unordered_map>
 
 using namespace std;
@@ -21,16 +19,19 @@ const int MaxParticles = 10000;
 #define PI 3.14159;
 #define DEG_TO_RAD 0.017453293
 
-struct Cube {
+// smallest distance for droplets to combine 
+float smallest_dist = 0.03;
+
+// represents a single cell/cell in 3d grid 
+struct Cell {
   vec3 corner;
-  // set of particles, as you cant add the same particle more than once 
+  // set of particles in the grid 
   set<Particle> cell_data;
-  //Particle cell_data[30];
 };
 
+// hash function for each cell in grid 
 class Hash {
 public:
-  // Returns hash value for argument 
   size_t operator()(const vec3& v) const
   {
     return std::hash<int>()(v.x) ^ std::hash<int>()(v.y) ^ std::hash<int>()(v.z);
@@ -41,51 +42,63 @@ public:
   }
 };
 
-// corner of grid and particles within grid 
-unordered_map<vec3, Cube, Hash> grid;
+// hashmap for cells forming grid in 3d space
+// key is upper corner, value is cell itself 
+unordered_map<vec3, Cell, Hash> grid;
 
-float smallest_dist = 0.03;
-
+// operator function for set of particles in each cell
 bool operator<(const Particle & p1, const Particle & p2)
 {
   return p1.position.y < p2.position.y;
 }
 
-// Each update it places a particle into a grid 
+// Every update it places the particle into a grid 
 void class_particles(Particle *p) {
 
+  // rounds coordinates up, to get the upper corner of the cell it should be in 
   float x = p->position.x < 0 ? floor(p->position.x) : ceil(p->position.x);
   float y = p->position.x < 0 ? floor(p->position.x) : ceil(p->position.x);
   float z = p->position.x < 0 ? floor(p->position.x) : ceil(p->position.x);
 
-  // key is corner of cube 
+  // key is corner of cell
   vec3 pos = vec3(ceil(p->position.x), ceil(p->position.y), ceil(p->position.z));
 
-  // Creates new cube if doesnt exist
+  // Creates new cell if doesnt exist
   if (grid.count(pos) == 0) {
     set<Particle> celldata;
-    Cube c = {pos, celldata};
+    Cell c = {pos, celldata};
     grid.insert({ pos, c });
   }
 
-  Cube & cells = grid.at(pos);
+  Cell & cell = grid.at(pos);
 
-  if (cells.cell_data.size() > 20) {
-    cells.cell_data.clear();
+
+  // when cell is too large, contains particles that have already left cell
+  // clear particles list in grid
+  if (cell.cell_data.size() > 10) {
+    cell.cell_data.clear();
   }
 
-  // set does not contain duplicate 
-  cells.cell_data.insert(*p);
+  cell.cell_data.insert(*p);
 
   set<Particle>::iterator it;
 
   // https://aapt.scitation.org/doi/10.1119/1.4820848
-  for (it = cells.cell_data.begin(); it != cells.cell_data.end(); ) {
-    if (vec_dist((*it).position, pos) < smallest_dist) {
-      /*p->colour = vec4(1.0, 0.0, 0.0, 1.0);*/
-      if (p->size + (*it).size < 0.5)
+  // https://vortex.plymouth.edu/precip/precip2aaa.html
+  for (it = cell.cell_data.begin(); it != cell.cell_data.end(); ) {
+    float dist = vec_dist((*it).position, pos);
+    float sq = pow((*it).size + p->size, 2);
+    // if particles are close and the probability is considered 
+    // erases particle from set of particles in grid if has been combined
+    if (dist < smallest_dist && is_prob(dist/ sq)) {
+      // new radius once 2 droplets combine volume
+      float r_sum = pow(p->size, 3) + pow((*it).size, 3);
+      float new_rad = pow(r_sum, 1.0 / 3);
+
+      // size of water droplet has upper bound, appropriately scaled for radius 
+      if (new_rad < 0.5)
         p->size += (*it).size;
-      it = cells.cell_data.erase(it);
+      it = cell.cell_data.erase(it);
     }
     else {
       it++;
@@ -115,7 +128,8 @@ void newParticle(ParticleList *pb, float gravity, float speed_fac, int num_level
 }
 
 // https://royalsocietypublishing.org/doi/pdf/10.1098/rspa.1964.0161
-void newParticleScatter(ParticleList *pb, Particle p, float gravity, float speed_fac, float coeff_of_rest) {
+// when particle hits ground, rebounds at velocity depending on coefficient of restitution  
+void particleRebound(ParticleList *pb, Particle p, float gravity, float speed_fac, float coeff_of_rest) {
 
   vec4 water_colour = vec4(1.0, 1.0, 1.0, 0.2);
 
@@ -151,8 +165,10 @@ void update_motion(Particle *p, float delta_time) {
   float drag = 0.5 * pow(p->velocity.y, 2) * 0.45 * area;
 
   p->velocity.y += p->acceleration * delta_time;
-  // force = change in mass*change_in_velocty/time
+
   p->velocity.y -= (drag * delta_time) / (p->mass);
+  p->velocity.x -= (drag * delta_time) / (p->mass);
+  p->velocity.z -= (drag * delta_time) / (p->mass);
 
   p->position.x += p->velocity.x* delta_time;
   p->position.z += p->velocity.z* delta_time;
@@ -169,7 +185,7 @@ void update_particles(ParticleList *pb, float gravity, float delta_time, float s
 
       // if the particle hasnt bounced before 
       if (pb->List[i].num_b == 0) {
-        newParticleScatter(pb, pb->List[i], gravity, speed_fac, coeff_of_rest);
+        particleRebound(pb, pb->List[i], gravity, speed_fac, coeff_of_rest);
       }
       // instead of removing the element in its position and shifting, swap element with last 
       // and discount last element from being considered
