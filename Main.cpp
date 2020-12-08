@@ -32,7 +32,7 @@ int collide_count = 1;
 // MODIFIABLE VARIABLES
 int emit_rate = 1;
 int num_levels = 1;
-const int MaxParticles = 1000;
+const int MaxParticles = 450;
 float gravity = -9.8;
 float speed_fac = 1;
 float emmitter_r = 0;
@@ -55,6 +55,7 @@ void createArray() {
 		printf("Memory not allocated.\n");
 		exit(0);
 	}
+
 }
 
 void newParticles() {

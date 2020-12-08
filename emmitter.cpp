@@ -15,12 +15,11 @@
 using namespace std;
 using namespace glm;
 
-const int MaxParticles = 10000;
 #define PI 3.14159;
 #define DEG_TO_RAD 0.017453293
 
 // smallest distance for droplets to combine 
-float smallest_dist = 0.03;
+float smallest_dist = 0.01;
 
 // represents a single cell/cell in 3d grid 
 struct Cell {
@@ -72,7 +71,6 @@ void class_particles(Particle *p) {
 
   Cell & cell = grid.at(pos);
 
-
   // when cell is too large, contains particles that have already left cell
   // clear particles list in grid
   if (cell.cell_data.size() > 10) {
@@ -86,7 +84,7 @@ void class_particles(Particle *p) {
   // https://aapt.scitation.org/doi/10.1119/1.4820848
   // https://vortex.plymouth.edu/precip/precip2aaa.html
   for (it = cell.cell_data.begin(); it != cell.cell_data.end(); ) {
-    float dist = vec_dist((*it).position, pos);
+    float dist = pow(vec_dist((*it).position, pos), 2);
     float sq = pow((*it).size + p->size, 2);
     // if particles are close and the probability is considered 
     // erases particle from set of particles in grid if has been combined
@@ -96,7 +94,7 @@ void class_particles(Particle *p) {
       float new_rad = pow(r_sum, 1.0 / 3);
 
       // size of water droplet has upper bound, appropriately scaled for radius 
-      if (new_rad < 0.5)
+      if (new_rad < 0.15)
         p->size += (*it).size;
       it = cell.cell_data.erase(it);
     }
@@ -140,7 +138,7 @@ void particleRebound(ParticleList *pb, Particle p, float gravity, float speed_fa
   // given water sphere of radius 0.08, mass = volume of sphere, water has density 1000kg/cubic meter 
   float mass = pow(p.size, 3) * 4 / 3 * 1000 * PI;
 
-  Particle new_p = { vec3(p.position.x, 0, p.position.z), water_colour, multVec(myRandomSpeed(coeff_of_rest, 1), 0.1), gravity, p.size, mass, 1 };
+  Particle new_p = { vec3(p.position.x, 0, p.position.z), water_colour, multVec(multVec(p.velocity, -1), coeff_of_rest), gravity, p.size, mass, 1 };
 
   if (pb->num_elements > pb->max_size) {
     pb->List[0] = pb->List[pb->num_elements];
