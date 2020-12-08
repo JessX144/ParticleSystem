@@ -32,7 +32,7 @@ int collide_count = 1;
 // MODIFIABLE VARIABLES
 int emit_rate = 1;
 int num_levels = 1;
-const int MaxParticles = 450;
+const int MaxParticles = 1000;
 float gravity = -9.8;
 float speed_fac = 1;
 float emmitter_r = 0;
@@ -215,6 +215,17 @@ void keyboard(unsigned char key, int x, int y)
       else {
         free(pb.List);
         createArray();
+        gravity = -9.8;
+        emit_rate = 1.0;
+        speed_fac = 1.0;
+        num_levels = 1;
+        emmitter_r = 0;
+        coeff_of_rest = 0.2;
+        radius = 0.08;
+        class_part = false;
+        eyex = 0.0;
+        eyey = 0.0;
+        eyez = 10.0;
       }
       break;
   } 
